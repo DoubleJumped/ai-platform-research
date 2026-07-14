@@ -1,0 +1,335 @@
+<title>Enterprise AI Business Case — Draft Deck</title>
+<style>
+  :root {
+    --paper: #EEF2F5; --slide: #FFFFFF; --ink: #16232D; --ink-2: #4A5D6B; --ink-3: #7A8B97;
+    --line: #D8E0E6; --accent: #1F6FB2; --accent-soft: #E3EEF7; --deep: #0E3A5C;
+    --amber: #B87A1E; --amber-soft: #F6ECDC; --good: #2E7D5B; --bad: #A8433B;
+    --note-bg: #F6F8FA; --shadow: 0 1px 3px rgba(22,35,45,.08), 0 8px 24px rgba(22,35,45,.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #0A141C; --slide: #14212C; --ink: #E5EDF2; --ink-2: #A4B6C2; --ink-3: #6E8290;
+      --line: #263947; --accent: #5BA3DC; --accent-soft: #16324A; --deep: #9CC4E4;
+      --amber: #D99A3D; --amber-soft: #33270F; --good: #58B48C; --bad: #D98078;
+      --note-bg: #101B24; --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); }
+  }
+  :root[data-theme="dark"] { --paper: #0A141C; --slide: #14212C; --ink: #E5EDF2; --ink-2: #A4B6C2;
+    --ink-3: #6E8290; --line: #263947; --accent: #5BA3DC; --accent-soft: #16324A; --deep: #9CC4E4;
+    --amber: #D99A3D; --amber-soft: #33270F; --good: #58B48C; --bad: #D98078;
+    --note-bg: #101B24; --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); }
+  :root[data-theme="light"] { --paper: #EEF2F5; --slide: #FFFFFF; --ink: #16232D; --ink-2: #4A5D6B;
+    --ink-3: #7A8B97; --line: #D8E0E6; --accent: #1F6FB2; --accent-soft: #E3EEF7; --deep: #0E3A5C;
+    --amber: #B87A1E; --amber-soft: #F6ECDC; --good: #2E7D5B; --bad: #A8433B;
+    --note-bg: #F6F8FA; --shadow: 0 1px 3px rgba(22,35,45,.08), 0 8px 24px rgba(22,35,45,.07); }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); margin: 0; padding: 36px 20px 72px;
+    font-family: "Avenir Next", "Avenir", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5; }
+  .deck { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 34px; }
+
+  .deck-head { text-align: center; color: var(--ink-3); font-size: 13px; }
+  .deck-head .tag { display: inline-block; background: var(--amber-soft); color: var(--amber);
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
+
+  .slide { background: var(--slide); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 40px 48px 34px; position: relative; }
+  .slide-num { position: absolute; top: 16px; right: 20px; font-size: 11px; color: var(--ink-3);
+    font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    font-weight: 700; margin-bottom: 8px; }
+  h1 { font-size: 34px; letter-spacing: -.015em; margin: 0 0 10px; text-wrap: balance; }
+  h2 { font-size: 24px; letter-spacing: -.01em; margin: 0 0 16px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 18px 0 6px; }
+  p, li { font-size: 14.5px; color: var(--ink); }
+  .sub { color: var(--ink-2); }
+  ul { margin: 8px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+  strong { color: var(--ink); }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .box { background: var(--accent-soft); border-radius: 8px; padding: 14px 16px; }
+  .box.warn { background: var(--amber-soft); }
+  .box .eyebrow { margin-bottom: 4px; }
+  .box p { margin: 0; font-size: 13.5px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink-3); padding: 6px 10px; border-bottom: 2px solid var(--line); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+  .pill { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 8px;
+    border-radius: 99px; letter-spacing: .03em; }
+  .pill.good { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+  .pill.warn { background: var(--amber-soft); color: var(--amber); }
+  .pill.risk { background: color-mix(in srgb, var(--bad) 13%, transparent); color: var(--bad); }
+
+  .notes { background: var(--note-bg); border: 1px solid var(--line); border-top: none;
+    border-radius: 0 0 10px 10px; margin: 0 12px; padding: 12px 36px 14px; font-size: 12.5px;
+    color: var(--ink-2); }
+  .notes .nlabel { font-size: 10px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--ink-3); font-weight: 700; display: block; margin-bottom: 4px; }
+  .notes p { font-size: 12.5px; color: var(--ink-2); margin: 4px 0; }
+
+  .title-slide { text-align: center; padding: 72px 48px; }
+  .title-slide .subtitle { font-size: 16px; color: var(--ink-2); max-width: 56ch; margin: 0 auto; }
+  .title-slide .meta { margin-top: 28px; font-size: 13px; color: var(--ink-3); }
+
+  .bignum { font-size: 30px; font-weight: 700; letter-spacing: -.01em; color: var(--accent); }
+  .statrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 14px 0 4px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .stat .lab { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+  @media (max-width: 700px) {
+    .slide { padding: 26px 22px; }
+    .cols, .statrow { grid-template-columns: 1fr; }
+    .notes { padding: 12px 20px; }
+  }
+</style>
+
+<div class="deck">
+
+  <div class="deck-head">
+    <span class="tag">PREVIEW PATH — not the selected direction. No hard vendor decision has been made (as of 2026-07-14); current deployed state is GitHub Copilot + Microsoft Cowork. This deck works out the single-vendor OpenAI path so it can move fast if picked. See reference/enterprise-ai-lanes.md for the other lanes.</span><br>
+    <span class="tag">Draft for review — figures USD list, verify CAD & current pricing before presenting</span><br>
+    Slide source lives in the ai-platform-research repo · adapt into the corporate template for the upward hop
+  </div>
+
+  <!-- 1 · Title -->
+  <section class="slide title-slide">
+    <span class="slide-num">1</span>
+    <div class="eyebrow">Enterprise AI Program</div>
+    <h1>One AI Platform for the Organization</h1>
+    <p class="subtitle">Recommendation and business case: ChatGPT Enterprise + Codex on the GPT-5.6 model family — one vendor for every desk, a governed pilot before every dollar of scale.</p>
+    <div class="meta">AI Specialist, Technology &amp; Innovation · July 2026 · DRAFT v1</div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Opening frame: this is a platform decision, not a tool purchase — the choice shapes governance, training, and procurement for years. The recommendation is deliberately conservative in structure (pilot → evidence → scale) and deliberately decisive on vendor (one lane, not three).</p>
+  </div>
+
+  <!-- 2 · Executive summary -->
+  <section class="slide">
+    <span class="slide-num">2</span>
+    <div class="eyebrow">Executive summary</div>
+    <h2>Recommend OpenAI across the board — piloted, measured, reversible</h2>
+    <ul>
+      <li><strong>What:</strong> ChatGPT for knowledge workers (Business tier now, Enterprise at scale) + Codex for our ~15 heavy developers — one vendor, one privacy review, one training program, on the frontier GPT-5.6 models.</li>
+      <li><strong>Why this vendor:</strong> highest likelihood of actual adoption (employees already prefer it), live Canadian data-at-rest residency, and a single credit pool covering both the office and coding lanes.</li>
+      <li><strong>Why now:</strong> staff AI use is happening regardless — the documented public-sector failure (Ontario, 2026) is <em>not</em> sanctioning a vetted tool. Alberta shows what the governed version returns.</li>
+      <li><strong>Risk posture:</strong> platform layer stays vendor-neutral so the coding lane can add alternatives without re-procurement; one residency gap (US inference) is a named, manageable PIA item.</li>
+    </ul>
+    <div class="box" style="margin-top:14px;"><div class="eyebrow">The ask</div>
+      <p>Approve a 90-day pilot (~$40K USD year-one run rate), sponsor the Privacy Impact Assessment, and authorize the OpenAI sales conversation.</p>
+    </div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Everything on this slide is expanded later — if the room only reads one slide, it's this one. The ask is small and specific on purpose: a pilot decision, not a platform commitment.</p>
+  </div>
+
+  <!-- 3 · Why now -->
+  <section class="slide">
+    <span class="slide-num">3</span>
+    <div class="eyebrow">Why now</div>
+    <h2>Ungoverned AI use is the risk; a sanctioned tool is the mitigation</h2>
+    <div class="cols">
+      <div>
+        <h3 style="margin-top:0">The cautionary tale — Ontario, 2026</h3>
+        <ul>
+          <li>Auditor General found <strong>~12,000 staff using ~400 AI websites</strong>; 60% rated unsafe.</li>
+          <li>Only one sanctioned tool existed — so <strong>94% of usage went to unvetted consumer sites</strong>, including sensitive data pasted into foreign services.</li>
+          <li>The failure wasn't adopting AI. It was failing to give staff a governed way to.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">The proof next door — Alberta, 2025–26</h3>
+        <ul>
+          <li>Volunteer cohort → academy → governed platform: <strong>2,000+ public servants trained</strong>, 1,000+ apps.</li>
+          <li>Delivery proof: a 5-month application rebuilt in <strong>4 days</strong>; an 11-week build for <strong>$108K vs $1.3–1.9M</strong> estimated.</li>
+          <li>Their playbook is open-source — we don't start from zero.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:10px">No Saskatchewan Crown has a documented program yet — we would set the provincial standard rather than follow it.</p>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Sources: Ontario AG 2026 AI audit (auditor.on.ca); Alberta Velocity Whitepapers + Anthropic case study. Alberta figures are first-party — frame as "Alberta's reported results, to validate in our own pilot." The Saskatchewan white-space point lands well at director level: leadership story, de-risked by the precedent next door.</p>
+  </div>
+
+  <!-- 4 · What we evaluated -->
+  <section class="slide">
+    <span class="slide-num">4</span>
+    <div class="eyebrow">Evaluation</div>
+    <h2>Three complete vendor lanes, five criteria</h2>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>OpenAI<br>(ChatGPT + Codex)</th><th>Anthropic<br>(Claude + Claude Code)</th><th>Microsoft<br>(M365 + GitHub Copilot)</th></tr>
+      <tr><td><strong>Likely adoption</strong></td><td><span class="pill good">strongest</span> employees already prefer it (76% vs 18% survey)</td><td><span class="pill warn">unproven</span> at office scale; Cowork still beta on web</td><td><span class="pill risk">weak</span> 20–30% of paying seats weekly-active industry-wide</td></tr>
+      <tr><td><strong>Coding lane (15 devs)</strong></td><td><span class="pill good">near-parity</span> Codex; 5.6 released this week</td><td><span class="pill good">leader</span> in 2026 evals &amp; dev preference</td><td><span class="pill warn">trails</span> both in agentic evals</td></tr>
+      <tr><td><strong>Canadian residency</strong></td><td><span class="pill warn">at-rest live</span>; inference in US</td><td><span class="pill warn">via AWS Canada</span>; first-party "coming 2026"</td><td><span class="pill good">best</span> at-rest now; in-country processing "2026"</td></tr>
+      <tr><td><strong>Cost shape</strong></td><td>$20/seat entry; credits metered</td><td>$20 seat + all tokens metered</td><td>$30/seat flat + base-plan increases</td></tr>
+      <tr><td><strong>Procurement friction</strong></td><td>medium — new vendor, one DPA</td><td>medium — new vendor + AWS path</td><td>lowest — incumbent agreement</td></tr>
+    </table></div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Full analysis with sources: reference/enterprise-ai-lanes.md in the working repo. Be upfront that Microsoft wins procurement friction and Anthropic wins raw coding quality — the recommendation is a weighted call, and adoption likelihood carries the most weight because shelfware is the documented failure mode of enterprise AI.</p>
+  </div>
+
+  <!-- 5 · Recommendation -->
+  <section class="slide">
+    <span class="slide-num">5</span>
+    <div class="eyebrow">Recommendation</div>
+    <h2>One vendor at the seat layer; vendor-neutral underneath</h2>
+    <ul>
+      <li><strong>Knowledge workers:</strong> ChatGPT Business ($20/seat/mo, self-serve) for the pilot; graduate to Enterprise (residency, SCIM, compliance API) as seats scale.</li>
+      <li><strong>Developers (~15):</strong> Codex — bundled with seats, budgeted separately for heavy usage (~$100–200/dev/mo in credits), spend caps from day one.</li>
+      <li><strong>Models:</strong> GPT-5.6 family — Sol for hard reasoning, Terra as default, Luna for high-volume cheap tasks.</li>
+      <li><strong>The architecture condition:</strong> our platform layer (document intelligence, agent harness, automation library) is built <strong>MCP-based and gateway-routed — no vendor lock-in in our own code.</strong> Seats are a contract; architecture is the commitment.</li>
+    </ul>
+    <div class="cols" style="margin-top:14px;">
+      <div class="box"><div class="eyebrow">Why this shape</div><p>Every strong Canadian adopter (Shopify, Wealthsimple, CIBC) runs tools behind one governed gateway. If Codex disappoints our 15 devs, we add an alternative for them without re-procurement or migration.</p></div>
+      <div class="box warn"><div class="eyebrow">What we're NOT doing</div><p>No tenant-wide license wave. No second or third seat platform. No production use before the PIA closes. Expansion happens on pilot evidence, not projections.</p></div>
+    </div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>The reversibility condition is what makes a single-vendor recommendation defensible — it converts "betting on OpenAI" into "starting with OpenAI." If challenged on why not Microsoft (incumbent): adoption data; why not Anthropic (better coder): feasibility and single-vendor simplicity, and the architecture keeps that door open.</p>
+  </div>
+
+  <!-- 6 · Evidence -->
+  <section class="slide">
+    <span class="slide-num">6</span>
+    <div class="eyebrow">Evidence</div>
+    <h2>The pattern is proven — in Canada, at every scale</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Organization</th><th>Program</th><th>Documented result</th></tr>
+      <tr><td><strong>Shopify</strong></td><td>CEO-mandated AI baseline; multi-tool behind internal gateway (incl. Codex)</td><td class="num">~20% engineering productivity; "10% for $1,000/mo is too cheap"</td></tr>
+      <tr><td><strong>CIBC</strong></td><td>GitHub Copilot + custom AI platform</td><td class="num">1,700+ devs; 10–14% productivity; 86% better dev experience</td></tr>
+      <tr><td><strong>TD Bank</strong></td><td>Copilot for engineers; 25,000+ staff on GenAI</td><td class="num">up to 20 hrs saved / 2-week sprint (50% of engineers)</td></tr>
+      <tr><td><strong>Wealthsimple</strong></td><td>Multi-tool via internal LLM gateway</td><td class="num">85% dev adoption; 500 daily gateway users</td></tr>
+      <tr><td><strong>Gov. of Alberta</strong></td><td>Governed agents + academy (public sector)</td><td class="num">25× delivery speed-up; $108K vs $1.3–1.9M build</td></tr>
+    </table></div>
+    <p class="sub">Common thread: governed enablement with measured outcomes — and multiple tools behind one gateway, which is exactly the architecture proposed here.</p>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>All sourced in reference/canadian-ai-adopters.md. Note Shopify uses Codex among its tools — the only named-tool overlap with this recommendation; the banks standardized on GitHub Copilot. The honest point isn't "everyone picked OpenAI" — it's "every serious Canadian program is governed, measured, and gateway-based, and ours will be too."</p>
+  </div>
+
+  <!-- 7 · Costs -->
+  <section class="slide">
+    <span class="slide-num">7</span>
+    <div class="eyebrow">Investment</div>
+    <h2>Pilot-year cost: contained and mostly reversible</h2>
+    <div class="statrow">
+      <div class="stat"><span class="bignum">~$12K</span><div class="lab">50 knowledge-worker seats · Business tier · $20/seat/mo annual (USD)</div></div>
+      <div class="stat"><span class="bignum">~$27K</span><div class="lab">15 developers · Codex heavy usage budgeted at ~$150/dev/mo in credits</div></div>
+      <div class="stat"><span class="bignum">~$40K</span><div class="lab">Year-one pilot run rate, USD list — before CAD conversion &amp; negotiation</div></div>
+    </div>
+    <ul>
+      <li><strong>Spend controls precede spending:</strong> workspace credit limits and per-user caps configured before the first developer session, with 75/90% alerts.</li>
+      <li><strong>Scale scenario</strong> (post-evidence, illustrative): 500 Enterprise seats at a negotiated ~$45/seat ≈ $270K/yr + developer credits — a decision this deck does <em>not</em> ask for.</li>
+      <li><strong>Comparators:</strong> incumbent alternative (M365 Copilot for the same 500) ≈ $180K/yr on top of base-plan increases; the pilot is ~2 weeks of one loaded FTE.</li>
+    </ul>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>All USD list — CAD pricing and actual Enterprise quotes are unverified until the sales conversation (that's part of the ask). The $150/dev/mo figure is the midpoint of OpenAI's own $100–200 heavy-user estimate. If finance pushes on the metered-credit uncertainty: that's what the caps and the pilot are for — we buy real consumption data before committing to scale.</p>
+  </div>
+
+  <!-- 8 · Privacy & compliance -->
+  <section class="slide">
+    <span class="slide-num">8</span>
+    <div class="eyebrow">Privacy &amp; compliance</div>
+    <h2>The path is defined; one gap is named and manageable</h2>
+    <ul>
+      <li><strong>Legal position:</strong> Saskatchewan FOIP has <strong>no data-localization requirement</strong> — residency is regulator preference, not law. The binding gates are a <strong>Privacy Impact Assessment</strong> and a written agreement with safeguards (SK IPC guidance).</li>
+      <li><strong>What OpenAI provides:</strong> no training on business data (default), SOC 2 Type II / ISO 27001, SSO/SCIM, compliance API, 30-day configurable retention, <strong>Canadian data-at-rest residency at no extra cost</strong>.</li>
+      <li><strong>The gap:</strong> model <em>inference</em> runs in the US today. Handled the standard way: written vendor confirmation of scope → PIA risk assessment → documented risk acceptance for transient cross-border processing. Alberta accepted the equivalent risk shape.</li>
+      <li><strong>Hard rules regardless of vendor:</strong> no personal information in prompts during pilot; staff training before access; usage audit via the compliance API.</li>
+    </ul>
+    <div class="box warn" style="margin-top:12px;"><div class="eyebrow">Pre-signature item #1</div>
+      <p>OpenAI's written answer on inference location and zero-retention scope for the ChatGPT product (confirmed today only for the API path). This single letter determines the PIA's central paragraph.</p>
+    </div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Full legal detail: reference/canadian-data-requirements.md (FOIP analysis, IPC guidance links, vendor scorecard). If privacy raises "why not the vendor with in-country processing": Microsoft's Canada in-country processing has no GA date either — every lane requires the same risk-acceptance shape today, so it doesn't differentiate.</p>
+  </div>
+
+  <!-- 9 · Risks -->
+  <section class="slide">
+    <span class="slide-num">9</span>
+    <div class="eyebrow">Risk register</div>
+    <h2>Named risks, each with a mitigation already in the plan</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Risk</th><th>Likelihood / impact</th><th>Mitigation</th></tr>
+      <tr><td>US inference fails PIA risk acceptance</td><td><span class="pill warn">low / high</span></td><td>Written vendor scope first; API path (in-region + zero-retention) as fallback for sensitive workloads</td></tr>
+      <tr><td>Enterprise minimums force early scale (150 seats reported)</td><td><span class="pill warn">med / med</span></td><td>Pilot on Business tier (min 2 seats, self-serve); "flexible pricing" confirmed in sales talks before graduating</td></tr>
+      <tr><td>Metered credits overrun budget</td><td><span class="pill warn">med / med</span></td><td>Caps + alerts before first use; pilot generates real consumption data before any scale commitment</td></tr>
+      <tr><td>Codex underperforms for the 15 heavy devs</td><td><span class="pill warn">med / low</span></td><td>Vendor-neutral platform layer — add an alternative coding tool for 15 people without touching the org rollout</td></tr>
+      <tr><td>OpenAI product churn outpaces our governance</td><td><span class="pill risk">high / low</span></td><td>Versioned training material; quarterly refresh owned by AI Specialist; vendor-neutral architecture limits blast radius</td></tr>
+      <tr><td>Pilot succeeds but adoption stalls at scale</td><td><span class="pill warn">med / high</span></td><td>Champions model (2–3 per department), expansion gated on measured weekly-active + hours-saved — never license waves</td></tr>
+    </table></div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>The churn risk is real but low-impact if owned — it's a maintenance tax, not a structural problem. The one risk this table can't mitigate is doing nothing: shadow AI grows in the vacuum (slide 3).</p>
+  </div>
+
+  <!-- 10 · Rollout -->
+  <section class="slide">
+    <span class="slide-num">10</span>
+    <div class="eyebrow">Rollout</div>
+    <h2>Ninety days to evidence, then decisions with data</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Phase</th><th>When</th><th>What happens</th><th>Gate to next phase</th></tr>
+      <tr><td><strong>0 · Groundwork</strong></td><td class="num">Weeks 0–4</td><td>PIA + security review kickoff; OpenAI sales conversation (residency letter, CAD pricing, minimums); spend controls configured; champions named</td><td>PIA path confirmed; pricing in writing</td></tr>
+      <tr><td><strong>1 · Pilot</strong></td><td class="num">Weeks 5–17</td><td>50 knowledge workers (2–3 champion-led departments) + 15 developers; training before access; weekly usage review</td><td>≥60% weekly-active; ≥3 hrs/wk saved self-reported; dev satisfaction ≥ current tooling</td></tr>
+      <tr><td><strong>2 · Scale decision</strong></td><td class="num">Week 18</td><td>Results to this table with real consumption costs; Enterprise negotiation if warranted</td><td>Evidence, not projection</td></tr>
+    </table></div>
+    <ul>
+      <li><strong>Measured like Alberta, reported quarterly:</strong> Readiness (staff trained, champions active) · System health (use cases live, governance pass rate) · Value (verified hours returned).</li>
+      <li>Training day one is the prompting fundamentals course (adapted from Alberta's open Academy Level 1 — free, proven, one week).</li>
+    </ul>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>The 60% weekly-active gate is deliberately aggressive — double the industry norm for enterprise AI — because champion-led cohorts should clear it; if they can't, the org-wide case doesn't exist and we've learned that for $40K instead of $400K. Metrics benchmarks: Anthropic enterprise targets (70% WAU, 3+ hrs/wk) and Microsoft adoption data.</p>
+  </div>
+
+  <!-- 11 · The ask -->
+  <section class="slide">
+    <span class="slide-num">11</span>
+    <div class="eyebrow">Decisions needed</div>
+    <h2>Three approvals to start the clock</h2>
+    <ul style="font-size:15.5px">
+      <li><strong>1 · Approve the 90-day pilot</strong> — ~$40K USD year-one run rate (50 seats + 15 developers), spend-capped.</li>
+      <li><strong>2 · Sponsor the PIA</strong> — privacy team engagement and the security/threat-risk review, starting now so paperwork and pilot land together.</li>
+      <li><strong>3 · Authorize the OpenAI sales conversation</strong> — to lock the three unknowns in writing: inference residency scope, CAD/Enterprise pricing, seat minimums.</li>
+    </ul>
+    <div class="box" style="margin-top:16px;"><div class="eyebrow">What you get in 90 days</div>
+      <p>Real adoption and cost data from our own staff, a completed privacy assessment, a trained champion network in three departments — and a scale decision made on evidence. If the pilot fails its gates, we stop, having spent weeks not years.</p>
+    </div>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Small, concrete, time-boxed asks — approvable in one meeting. Nothing here commits the org to a platform; it commits us to finding out properly.</p>
+  </div>
+
+  <!-- 12 · Appendix -->
+  <section class="slide">
+    <span class="slide-num">12</span>
+    <div class="eyebrow">Appendix</div>
+    <h2>Model pricing snapshot &amp; sources</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Model (USD / MTok)</th><th>Input</th><th>Cached</th><th>Output</th><th>Role</th></tr>
+      <tr><td>GPT-5.6 Sol</td><td class="num">$5.00</td><td class="num">$0.50</td><td class="num">$30.00</td><td>hard reasoning</td></tr>
+      <tr><td>GPT-5.6 Terra</td><td class="num">$2.50</td><td class="num">$0.25</td><td class="num">$15.00</td><td>everyday default</td></tr>
+      <tr><td>GPT-5.6 Luna</td><td class="num">$1.00</td><td class="num">$0.10</td><td class="num">$6.00</td><td>high-volume / cheap</td></tr>
+      <tr><td>GPT-5.4 nano</td><td class="num">$0.20</td><td class="num">$0.02</td><td class="num">$1.25</td><td>bulk automation</td></tr>
+    </table></div>
+    <p class="sub">All 5.6 models: 1.05M context; batch API 50% off. Verified 2026-07-09 against developers.openai.com/api/docs/pricing.</p>
+    <h3>Working papers (full sources &amp; analysis)</h3>
+    <ul class="sub" style="font-size:13px">
+      <li>Vendor lane analysis — <em>reference/enterprise-ai-lanes.md</em> · Model pricing — <em>reference/model-pricing.md</em></li>
+      <li>Legal &amp; residency — <em>reference/canadian-data-requirements.md</em> · Precedents — <em>reference/canadian-ai-adopters.md</em></li>
+      <li>Alberta program playbook — <em>reference/alberta-velocity-program.md</em> (open-source: thevelocitywhitepapers.com)</li>
+    </ul>
+  </section>
+  <div class="notes"><span class="nlabel">Speaker notes</span>
+    <p>Keep the appendix in the pre-read version; cut it from the presented version. Every number in this deck traces to a stamped fact file — if a figure is challenged, the source is one click away.</p>
+  </div>
+
+</div>
