@@ -17,6 +17,10 @@
 ## Coding-tool cards
 
 - [coding-tools/github-copilot.md](coding-tools/github-copilot.md) — Copilot enterprise card: plans, full model roster, policies, exclusions, agentic surfaces (CURRENTLY DEPLOYED) · check-monthly
+- [coding-tools/copilot-vscode-plan-mode.md](coding-tools/copilot-vscode-plan-mode.md) — Plan agent in VS Code: invoke, mechanics, session-memory gotcha, plan/implement model split, when to use · check-monthly
+- [coding-tools/copilot-vscode-agents-subagents.md](coding-tools/copilot-vscode-agents-subagents.md) — custom agents + subagents in VS Code: .agent.md config, four agent surfaces, when subagents pay off (usually don't) · check-monthly
+- [coding-tools/copilot-vscode-daily-workflow.md](coding-tools/copilot-vscode-daily-workflow.md) — VS Code day-to-day: modes, #-mentions, instruction files, session hygiene, credit visibility, Jun/Jul 2026 changes · check-monthly
+- [coding-tools/agentic-coding-practices.md](coding-tools/agentic-coding-practices.md) — the working loop: plan → plan.md register → one task per window, context building, ~40% house rule, context-rot evidence · check-quarterly
 - [coding-tools/claude-code.md](coding-tools/claude-code.md) — Claude Code enterprise card: licensing paths, backend overrides, per-backend feature degradation, governance · check-monthly
 - [coding-tools/codex.md](coding-tools/codex.md) — Codex card: surfaces, bundled licensing, models, deployment paths, admin controls · check-monthly
 

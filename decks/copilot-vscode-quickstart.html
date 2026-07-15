@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <title>Copilot in VS Code: The Working Method</title>
+    <style>
+        /* === THEME: terminal / editor === */
+        :root {
+            --stage-bg: #05070c;
+            --slide-bg: #0b0f17;
+            --slide-bg-2: #0d121c;
+            --panel: #0e141f;
+            --panel-2: #111825;
+            --line: #1e2733;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+            --text-bright: #eaf0f7;
+            --green: #3fb950;
+            --green-2: #7ee787;
+            --blue: #79c0ff;
+            --amber: #ffa657;
+            --red: #ff7b72;
+            --frontier: #ffa657;
+            --versatile: #79c0ff;
+            --fast: #3fb950;
+            --font-mono: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+            --font-body: "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --px: 120px;
+            --py: 82px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%; margin: 0;
+            overflow: hidden;
+            background: var(--stage-bg);
+            color: var(--text);
+            font-family: var(--font-body);
+        }
+
+        button, a { font: inherit; }
+        button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+        .sr-only {
+            position: fixed; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+
+        /* === STAGE === */
+        .deck-viewport {
+            position: fixed; inset: 0; overflow: hidden;
+            background: radial-gradient(circle at 50% 20%, #0c1220 0, #06080e 72%, #04050a 100%);
+            touch-action: pan-y pinch-zoom;
+        }
+        .deck-stage {
+            position: absolute; left: 0; top: 0;
+            width: 1920px; height: 1080px; overflow: hidden;
+            transform-origin: 0 0; background: var(--slide-bg);
+            box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+        }
+        .slide {
+            position: absolute; inset: 0;
+            width: 1920px; height: 1080px; overflow: hidden;
+            visibility: hidden; opacity: 0; pointer-events: none;
+            background: var(--slide-bg);
+            transition: opacity 300ms ease;
+        }
+        .slide.active { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+        .slide.alt { background: var(--slide-bg-2); }
+
+        .slide::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(120,192,255,0.020) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(120,192,255,0.020) 1px, transparent 1px);
+            background-size: 96px 96px;
+        }
+
+        .inner {
+            position: absolute; inset: var(--py) var(--px);
+            min-width: 0; display: flex; flex-direction: column;
+        }
+        .centered { justify-content: center; }
+
+        /* === TYPE === */
+        h1, h2, h3, p, ul, ol, pre { margin: 0; }
+
+        h1 { font-family: var(--font-mono); font-weight: 700; font-size: 118px; line-height: 1.0; letter-spacing: -0.02em; color: var(--text-bright); }
+        h2 { font-family: var(--font-mono); font-weight: 700; font-size: 60px; line-height: 1.08; letter-spacing: -0.01em; color: var(--text-bright); max-width: 1580px; }
+        h3 { font-family: var(--font-mono); font-size: 32px; font-weight: 700; line-height: 1.2; }
+
+        p, li { font-size: 31px; line-height: 1.45; overflow-wrap: anywhere; }
+
+        .kicker { font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); }
+        .kicker .c { color: var(--text-dim); }
+
+        .lead { max-width: 1320px; font-size: 37px; line-height: 1.42; color: var(--text-dim); }
+        .lead strong { color: var(--text-bright); font-weight: 700; }
+
+        .rule { width: 78px; height: 4px; margin: 24px 0 32px; background: var(--green); }
+
+        .dim { color: var(--text-dim); }
+        .b { color: var(--blue); }
+        .g { color: var(--green-2); }
+        .a { color: var(--amber); }
+        strong { font-weight: 700; color: var(--text-bright); }
+
+        .prompt::before { content: "> "; color: var(--green); }
+
+        /* === CHAT / TERMINAL PANEL === */
+        .term { background: #0a0e16; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+        .term-bar { display: flex; align-items: center; gap: 9px; padding: 15px 20px; background: #0f1622; border-bottom: 1px solid var(--line); }
+        .term-bar i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+        .term-bar i:nth-child(1) { background: #ff5f56; }
+        .term-bar i:nth-child(2) { background: #ffbd2e; }
+        .term-bar i:nth-child(3) { background: #27c93f; }
+        .term-bar em { margin-left: 12px; font-family: var(--font-mono); font-style: normal; font-size: 19px; color: var(--text-dim); letter-spacing: 0.04em; }
+        .term-body { margin: 0; padding: 26px 30px; font-family: var(--font-mono); font-size: 25px; line-height: 1.62; color: var(--text); white-space: pre-wrap; }
+        .term-body.sm { font-size: 23px; line-height: 1.6; }
+        .tk-p { color: var(--green); }
+        .tk-c { color: var(--text-dim); }
+        .tk-k { color: var(--blue); }
+        .tk-s { color: var(--green-2); }
+        .tk-f { color: var(--amber); }
+        .tk-w { color: var(--text-bright); }
+
+        /* === DECISION MAP ROWS === */
+        .map { display: flex; flex-direction: column; gap: 20px; }
+        .row { display: grid; grid-template-columns: 1fr 52px 1fr; align-items: center; gap: 30px; padding: 28px 36px; background: var(--panel); border-left: 6px solid var(--line); }
+        .row.frontier { border-left-color: var(--frontier); }
+        .row.versatile { border-left-color: var(--versatile); }
+        .row.fast { border-left-color: var(--fast); }
+        .row .job { font-family: var(--font-mono); font-size: 38px; font-weight: 700; color: var(--text-bright); }
+        .row .job small { display: block; font-family: var(--font-body); font-size: 24px; font-weight: 400; color: var(--text-dim); margin-top: 7px; }
+        .row .arw { text-align: center; color: var(--text-dim); font-size: 40px; }
+        .row .to { text-align: right; }
+        .row .to .name { font-family: var(--font-mono); font-size: 38px; font-weight: 700; color: var(--text-bright); }
+        .row .to .tag { font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 6px; }
+        .row.frontier .tag { color: var(--frontier); }
+        .row.versatile .tag { color: var(--versatile); }
+        .row.fast .tag { color: var(--fast); }
+
+        /* === SPLIT === */
+        .split { display: grid; grid-template-columns: minmax(0,0.92fr) minmax(0,1.08fr); gap: 64px; align-items: center; height: 100%; }
+        .split > * { min-width: 0; }
+
+        /* === BULLETS === */
+        .bullets { list-style: none; padding: 0; margin: 12px 0 0; }
+        .bullets li { position: relative; padding-left: 40px; margin-bottom: 20px; font-size: 30px; line-height: 1.38; }
+        .bullets li::before { content: "$"; position: absolute; left: 0; top: 0; font-family: var(--font-mono); color: var(--green); font-weight: 700; }
+        .bullets.tight li { margin-bottom: 14px; font-size: 28px; }
+        .bullets.arrow li::before { content: ">"; }
+
+        .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; margin-top: 22px; }
+        .do-dont h3.up { color: var(--amber); }
+        .do-dont h3.down { color: var(--green); }
+        .do-dont ul { margin-top: 14px; }
+
+        /* === STATS === */
+        .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 26px; margin-top: 6px; }
+        .stats > div { padding: 30px 30px; background: var(--panel); border: 1px solid var(--line); }
+        .stats .n { font-family: var(--font-mono); font-size: 64px; font-weight: 700; line-height: 1; }
+        .stats .n.a { color: var(--amber); }
+        .stats .n.b { color: var(--blue); }
+        .stats .n.g { color: var(--green); }
+        .stats p { font-size: 24px; color: var(--text-dim); margin-top: 14px; line-height: 1.38; }
+
+        /* === PIPELINE === */
+        .pipe { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+        .pstep { display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 26px; padding: 22px 30px; background: var(--panel); border: 1px solid var(--line); border-left-width: 5px; }
+        .pstep.fast { border-left-color: var(--fast); }
+        .pstep.versatile { border-left-color: var(--versatile); }
+        .pstep.frontier { border-left-color: var(--frontier); }
+        .pstep .idx { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text-dim); }
+        .pstep .what { font-size: 28px; color: var(--text-bright); }
+        .pstep .what code { font-family: var(--font-mono); color: var(--blue); font-size: 25px; }
+        .pstep .with { font-family: var(--font-mono); font-size: 23px; text-align: right; white-space: nowrap; }
+        .pstep.fast .with { color: var(--fast); }
+        .pstep.versatile .with { color: var(--versatile); }
+        .pstep.frontier .with { color: var(--frontier); }
+
+        /* === CONTROL CARDS === */
+        .controlgrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 22px; margin-top: 32px; }
+        .control { padding: 27px 30px; background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--blue); }
+        .control:nth-child(2) { border-left-color: var(--amber); }
+        .control:nth-child(3) { border-left-color: var(--green); }
+        .control .label { font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: var(--text-bright); }
+        .control p { font-size: 24px; color: var(--text-dim); margin-top: 9px; line-height: 1.33; }
+
+        /* === REVIEW GRID === */
+        .reviewgrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 28px; margin-top: 38px; }
+        .reviewcard { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--amber); padding: 31px 30px; }
+        .reviewcard:nth-child(2) { border-top-color: var(--green); }
+        .reviewcard h3 { font-size: 31px; color: var(--text-bright); margin-bottom: 16px; }
+        .reviewcard li { font-size: 25px; margin-bottom: 12px; }
+
+        .smallnote { margin-top: 22px; font-size: 23px; color: var(--text-dim); font-family: var(--font-mono); line-height: 1.35; }
+        .kbd { font-family: var(--font-mono); color: var(--blue); }
+
+        /* === SOURCES === */
+        .col2 { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; margin-top: 10px; }
+        .col2 h3 { font-family: var(--font-mono); font-size: 22px; color: var(--green); margin-bottom: 16px; letter-spacing: 0.04em; }
+        .srclist { list-style: none; padding: 0; margin: 0; }
+        .srclist li { font-size: 23px; line-height: 1.34; margin-bottom: 13px; color: var(--text-dim); }
+        .srclist li strong { color: var(--text-bright); }
+
+        /* === TABLES === */
+        .tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+        .tbl thead th { text-align: left; padding: 13px 18px; font-family: var(--font-mono); font-size: 19px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); border-bottom: 2px solid var(--line); }
+        .tbl tbody td { padding: 12px 18px; font-size: 25px; border-bottom: 1px solid var(--line); color: var(--text); }
+        .tbl .model { font-family: var(--font-mono); font-weight: 700; color: var(--text-bright); }
+        .tbl .num { text-align: right; font-family: var(--font-mono); }
+        .tbl .tag { font-family: var(--font-mono); font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; }
+        .tag.tf { color: var(--frontier); }
+        .tag.tv { color: var(--versatile); }
+        .tag.tt { color: var(--fast); }
+        .tnote { margin-top: 20px; font-size: 21px; color: var(--text-dim); font-family: var(--font-mono); }
+
+        /* === CHROME === */
+        .page { position: absolute; right: var(--px); bottom: 52px; font-family: var(--font-mono); font-size: 21px; color: var(--text-dim); letter-spacing: 0.06em; }
+        .watermark { position: absolute; right: 70px; bottom: 40px; font-family: var(--font-mono); font-size: 260px; line-height: 0.8; color: rgba(63,185,80,0.07); pointer-events: none; font-weight: 700; }
+
+        /* === MOTION === */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 520ms var(--ease-out), transform 520ms var(--ease-out); }
+        .slide.active .reveal { opacity: 1; transform: translateY(0); }
+        .slide.active .reveal:nth-child(1) { transition-delay: 60ms; }
+        .slide.active .reveal:nth-child(2) { transition-delay: 130ms; }
+        .slide.active .reveal:nth-child(3) { transition-delay: 200ms; }
+        .slide.active .reveal:nth-child(4) { transition-delay: 270ms; }
+        .slide.active .reveal:nth-child(5) { transition-delay: 340ms; }
+        .slide.active .reveal:nth-child(6) { transition-delay: 410ms; }
+
+        /* === CONTROLS === */
+        .deck-controls { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); z-index: 1000; display: flex; align-items: center; gap: 8px; padding: 7px; color: #fff; background: rgba(5,7,12,0.92); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; box-shadow: 0 10px 32px rgba(0,0,0,0.4); transform: translateX(-50%); backdrop-filter: blur(10px); }
+        .deck-controls button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: inherit; background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
+        .deck-controls button:hover { background: rgba(255,255,255,0.14); }
+        .deck-controls button:disabled { opacity: 0.35; cursor: default; }
+        .slide-counter { min-width: 84px; text-align: center; font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+        /* === PRINT === */
+        @page { size: 16in 9in; margin: 0; }
+        @media print {
+            html, body { width: 1920px; height: auto; overflow: visible; background: #000; }
+            .deck-viewport { position: static; overflow: visible; background: #000; }
+            .deck-stage { position: static; width: auto; height: auto; overflow: visible; transform: none !important; box-shadow: none; }
+            .slide { position: relative; display: block !important; width: 1920px; height: 1080px; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; break-after: page; page-break-after: always; }
+            .slide:last-child { break-after: auto; page-break-after: auto; }
+            .deck-controls, .sr-only { display: none !important; }
+        }
+
+        /* === REDUCED MOTION === */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .reveal { opacity: 1 !important; transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="deck-viewport" id="deckViewport">
+        <main class="deck-stage" id="deckStage" aria-label="Presentation slides">
+
+
+            <!-- 1 COVER -->
+            <section class="slide active" aria-labelledby="s1" data-slide-title="The working method">
+                <div class="inner centered">
+                    <p class="kicker reveal">GitHub Copilot <span class="c">/</span> VS Code <span class="c">/</span> 2026-07-15</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h1 class="reveal prompt" id="s1">the working method</h1>
+                    <p class="lead reveal" style="margin-top: 38px;">Which model for which task, then the loop that keeps agent sessions short, cheap, and reviewable: <strong>plan &rarr; task register &rarr; one task per context window</strong>.</p>
+                </div>
+                <span class="watermark" aria-hidden="true">_</span>
+                <span class="page" aria-hidden="true">01 / 12</span>
+                <!-- Presenter notes:
+                Companion to the model-selection deck. Part one: model in one look. Part two: the working loop, down to the commands.
+                -->
+            </section>
+
+
+            <!-- 2 THE MAP -->
+            <section class="slide" aria-labelledby="s2" data-slide-title="Task to model">
+                <div class="inner centered">
+                    <p class="kicker reveal">what am i doing right now?</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s2" style="margin-bottom: 40px;">Task to model, in one look</h2>
+                    <div class="map reveal">
+                        <div class="row frontier">
+                            <div class="job">plan &amp; solve<small>architecture, ambiguity, hard bugs, big-repo analysis</small></div>
+                            <div class="arw" aria-hidden="true">&rarr;</div>
+                            <div class="to"><div class="name">Sol high</div><div class="tag">frontier</div></div>
+                        </div>
+                        <div class="row versatile">
+                            <div class="job">implement<small>features, tests, routine multi-file work &mdash; the daily driver</small></div>
+                            <div class="arw" aria-hidden="true">&rarr;</div>
+                            <div class="to"><div class="name">Sol medium</div><div class="tag">default</div></div>
+                        </div>
+                        <div class="row fast">
+                            <div class="job">search &amp; small edits<small>find code, explain, boilerplate, single-file fixes</small></div>
+                            <div class="arw" aria-hidden="true">&rarr;</div>
+                            <div class="to"><div class="name">Luna high</div><div class="tag">fast</div></div>
+                        </div>
+                    </div>
+                    <p class="smallnote reveal">Effort lives in the model picker: the <span class="kbd">&rsaquo;</span> arrow next to the model name. Skip Terra &mdash; some Sol or Luna setting always beats it on cost-for-intelligence. Never give Luna big-repo recall.</p>
+                </div>
+                <span class="page" aria-hidden="true">02 / 12</span>
+                <!-- Presenter notes:
+                Condensed from the 5.6 model guide: Sol medium daily driver, Sol high for hard work, Luna for small bounded tasks. Terra is dominated per Artificial Analysis. Luna long-context recall collapses past 256K, so big-repo analysis is Sol's job.
+                -->
+            </section>
+
+
+            <!-- 3 ESCALATE -->
+            <section class="slide alt" aria-labelledby="s3" data-slide-title="Escalate on signals">
+                <div class="inner">
+                    <p class="kicker reveal">when to change tier</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s3">Default Sol medium. Escalate on signals.</h2>
+                    <div class="do-dont reveal" style="margin-top: 30px;">
+                        <div>
+                            <h3 class="up">^ Sol high when</h3>
+                            <ul class="bullets tight">
+                                <li>A cheaper model failed the same error twice</li>
+                                <li>The task spans multiple files or subsystems</li>
+                                <li>Requirements are ambiguous</li>
+                                <li>The run will exceed ~10 minutes</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="down">v Luna high for</h3>
+                            <ul class="bullets tight">
+                                <li>Repo search and navigation</li>
+                                <li>Boilerplate and test scaffolding</li>
+                                <li>Well-defined single-file edits</li>
+                                <li>Summaries, changelogs, comments</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="smallnote reveal">Drop back to medium when the hard part is done. Higher effort bills as more reasoning tokens &mdash; there is no multiplier, but there is no refund either.</p>
+                </div>
+                <span class="page" aria-hidden="true">03 / 12</span>
+                <!-- Presenter notes:
+                One escalation rule, four signals each way. Max effort is break-glass only; Ultra does not exist in Copilot.
+                -->
+            </section>
+
+
+            <!-- 4 DIVIDER: THE METHOD -->
+            <section class="slide" aria-labelledby="s4" data-slide-title="One task per context window">
+                <div class="inner centered">
+                    <p class="kicker reveal">part two <span class="c">//</span> the method</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s4" style="font-size: 70px;">One task per context window</h2>
+                    <p class="lead reveal" style="margin-top: 34px;">Model recall degrades as the window fills, and every request re-bills the whole thread. So: <strong>plan once, write the tasks to a file, implement one task per fresh window.</strong></p>
+                    <p class="lead reveal" style="margin-top: 22px; font-size: 28px;">This is the documented best practice, not a house invention &mdash; Anthropic's guidance is literally &ldquo;write the spec to a file, then start a fresh session to execute it.&rdquo;</p>
+                </div>
+                <span class="watermark" aria-hidden="true">&gt;</span>
+                <span class="page" aria-hidden="true">04 / 12</span>
+                <!-- Presenter notes:
+                Context rot: measured recall degradation as windows fill (11 of 12 models drop below 50% of short-context performance past ~32K tokens, arxiv 2606.29718). Anthropic quote from code.claude.com/docs/en/best-practices.
+                -->
+            </section>
+
+
+            <!-- 5 PLAN -->
+            <section class="slide alt" aria-labelledby="s5" data-slide-title="Plan first">
+                <div class="inner">
+                    <p class="kicker reveal">step 1 <span class="c">//</span> plan</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s5">/plan: tasks before code</h2>
+                    <div class="split" style="margin-top: 18px;">
+                        <div class="reveal">
+                            <p class="lead" style="font-size: 32px;">The Plan agent researches read-only, asks clarifying questions, and returns steps + verification. <strong>Nothing is edited until you say go.</strong></p>
+                            <ul class="bullets tight" style="margin-top: 22px;">
+                                <li>Iterate on the plan in chat until the task list is right</li>
+                                <li>Plan on <span class="a">Sol high</span>: <span class="b">chat.planAgent.defaultModel</span></li>
+                                <li>Skip planning for single-file fixes &mdash; just prompt Agent</li>
+                            </ul>
+                        </div>
+                        <div class="term reveal" role="group" aria-label="Plan agent">
+                            <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><em>GitHub Copilot Chat</em></div>
+<pre class="term-body"><span class="tk-c"># select Plan from the agent picker, or:</span>
+<span class="tk-k">/plan</span> <span class="tk-w">add rate limiting to public auth endpoints</span>
+
+<span class="tk-c"># returns: summary, tasks, verification steps</span>
+<span class="tk-c"># iterate: "drop step 3", "reuse the redis client"</span></pre>
+                        </div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">05 / 12</span>
+                <!-- Presenter notes:
+                Frontier reasoning is safest before any code is changed. Plan researches with read-only tools and a lightweight Explore subagent.
+                -->
+            </section>
+
+
+            <!-- 6 REGISTER -->
+            <section class="slide" aria-labelledby="s6" data-slide-title="The task register">
+                <div class="inner">
+                    <p class="kicker reveal">step 2 <span class="c">//</span> persist</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s6">Write the tasks to plan.md</h2>
+                    <div class="split" style="margin-top: 18px;">
+                        <div class="reveal">
+                            <p class="lead" style="font-size: 32px;">Copilot keeps the plan in session memory &mdash; <strong>it's deleted when the conversation ends.</strong> Tell it to write a checklist to the repo instead.</p>
+                            <ul class="bullets tight" style="margin-top: 22px;">
+                                <li>The register is the state that survives between windows</li>
+                                <li>Tasks, subtasks, and a notes section for learnings</li>
+                            </ul>
+                        </div>
+                        <div class="term reveal" role="group" aria-label="plan.md task register">
+                            <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><em>plan.md</em></div>
+<pre class="term-body sm"><span class="tk-p">&gt;</span> <span class="tk-w">write this plan to plan.md as a task checklist</span>
+
+<span class="tk-f">## rate limiting</span>
+<span class="tk-s">- [x] 1. middleware skeleton + config</span>
+<span class="tk-w">- [ ] 2. redis counter, sliding window</span>
+<span class="tk-w">  - [ ] 2a. key schema + ttl</span>
+<span class="tk-w">  - [ ] 2b. 429 + Retry-After header</span>
+<span class="tk-w">- [ ] 3. tests: 10/min pass, 11th = 429</span>
+<span class="tk-f">## notes</span>
+<span class="tk-c">- reuse RedisClient from src/cache.ts</span></pre>
+                        </div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">06 / 12</span>
+                <!-- Presenter notes:
+                VS Code does not document writing the plan to a repo file - it's an instruction you give, and it works. Anthropic documents the identical pattern (SPEC.md, NOTES.md). Add plan.md to .gitignore or commit it, team's choice.
+                -->
+            </section>
+
+
+            <!-- 7 THE LOOP -->
+            <section class="slide alt" aria-labelledby="s7" data-slide-title="The loop">
+                <div class="inner centered">
+                    <p class="kicker reveal">step 3 <span class="c">//</span> execute</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s7" style="margin-bottom: 26px;">The loop: fresh window, one task</h2>
+                    <div class="pipe reveal">
+                        <div class="pstep fast">
+                            <div class="idx">1</div>
+                            <div class="what"><code>/clear</code> &mdash; start a fresh window</div>
+                            <div class="with">every task</div>
+                        </div>
+                        <div class="pstep versatile">
+                            <div class="idx">2</div>
+                            <div class="what">Load context: <code>#file:plan.md</code> + exemplar files &mdash; "implement task 2 only"</div>
+                            <div class="with">Sol medium</div>
+                        </div>
+                        <div class="pstep versatile">
+                            <div class="idx">3</div>
+                            <div class="what">Implement + verify: tests, lint, run the changed behavior</div>
+                            <div class="with">Sol medium</div>
+                        </div>
+                        <div class="pstep frontier">
+                            <div class="idx">4</div>
+                            <div class="what">Update the register: check off the task, append learnings to notes</div>
+                            <div class="with">then repeat</div>
+                        </div>
+                    </div>
+                    <p class="smallnote reveal">Each window starts clean and reads its state from plan.md. No window inherits another window's junk.</p>
+                </div>
+                <span class="page" aria-hidden="true">07 / 12</span>
+                <!-- Presenter notes:
+                This is the golden standard. The register carries state; windows stay small; every diff maps to one named task.
+                -->
+            </section>
+
+
+            <!-- 8 CONTEXT BUILDING -->
+            <section class="slide" aria-labelledby="s8" data-slide-title="Build the context">
+                <div class="inner">
+                    <p class="kicker reveal">context <span class="c">//</span> show, don't tell</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s8">Point at an example, not at the repo</h2>
+                    <div class="split" style="margin-top: 18px;">
+                        <div class="reveal">
+                            <p class="lead" style="font-size: 32px;">The best convention document is <strong>a file that already follows the convention.</strong> Pin it. Don't say &ldquo;investigate the codebase&rdquo; &mdash; unscoped exploration fills the window with junk.</p>
+                            <ul class="bullets tight" style="margin-top: 22px;">
+                                <li><span class="b">/init</span> generates copilot-instructions.md &mdash; conventions load automatically, keep it short</li>
+                                <li>Pin exemplars with <span class="b">#file</span>, symbols, <span class="b">#codebase</span> for targeted search</li>
+                            </ul>
+                        </div>
+                        <div class="term reveal" role="group" aria-label="Context example">
+                            <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><em>GitHub Copilot Chat</em></div>
+<pre class="term-body sm"><span class="tk-p">&gt;</span> <span class="tk-w">implement task 2 in</span> <span class="tk-k">#file:plan.md</span>
+
+<span class="tk-p">&gt;</span> <span class="tk-w">follow the middleware pattern in</span>
+  <span class="tk-k">#file:src/middleware/requestLog.ts</span>
+
+<span class="tk-p">&gt;</span> <span class="tk-w">do not touch the other tasks</span></pre>
+                        </div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">08 / 12</span>
+                <!-- Presenter notes:
+                "Reference existing patterns" is an explicit Anthropic best-practice: name a good example file and say follow the pattern. Instruction files load on every request - every line costs tokens, so cut anything that wouldn't cause mistakes if removed.
+                -->
+            </section>
+
+
+            <!-- 9 THE GAUGE -->
+            <section class="slide alt" aria-labelledby="s9" data-slide-title="Watch the gauge">
+                <div class="inner">
+                    <p class="kicker reveal">context <span class="c">//</span> know when to leave</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s9">At ~40% full: synthesize, then restart</h2>
+                    <p class="lead reveal" style="margin-top: 26px;">The chat input shows a context gauge &mdash; hover for exact tokens (e.g. <strong>46K/128K</strong>) and what's using them. Quality decays long before the window is full. Don't ride it down: <strong>write what you've learned into plan.md notes, <span class="kbd">/clear</span>, continue fresh.</strong></p>
+                    <div class="stats reveal" style="margin-top: 34px;">
+                        <div><div class="n g">~40%</div><p>House rule: finish the thought, write learnings to the register, restart. Vendors publish no number; degradation is measurable well before the limit.</p></div>
+                        <div><div class="n b">/compact</div><p>The fallback when you must stay in a thread: summarizes it in place (add focus: <span class="kbd">/compact focus on the schema</span>).</p></div>
+                        <div><div class="n a">2x</div><p>Billing past 272K input on GPT-5.6: the whole request re-prices. Long threads get dumber and more expensive at the same time.</p></div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">09 / 12</span>
+                <!-- Presenter notes:
+                40% is our house rule, stated as such. Attributable numbers in the wild: ~60% (Dibia), 95% auto-compact (Claude Code, not Copilot). VS Code auto-compacts "when the window fills" - unpublished threshold; treat it as an emergency brake, not the plan.
+                -->
+            </section>
+
+
+            <!-- 10 CREDITS -->
+            <section class="slide" aria-labelledby="s10" data-slide-title="Credits">
+                <div class="inner">
+                    <p class="kicker reveal">credits <span class="c">//</span> the meter</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s10">Cost = model &times; tokens. Watch the meter.</h2>
+                    <div class="split" style="margin-top: 24px; grid-template-columns: 0.85fr 1.15fr; align-items: start;">
+                        <div class="reveal">
+                            <div class="control"><div class="label">Status bar</div><p>Copilot icon &rarr; % of monthly allowance used, reset date.</p></div>
+                            <div class="control" style="margin-top: 22px; border-left-color: var(--amber);"><div class="label">Context gauge</div><p>Hover the gauge in chat &rarr; exact tokens and this session's cost in credits.</p></div>
+                            <p class="smallnote" style="margin-top: 26px;">Billing is per token (1 credit = $0.01) &mdash; prompt count is irrelevant. Inline completions are free. Auto model selection takes 10% off.</p>
+                        </div>
+                        <div class="reveal">
+                            <table class="tbl">
+                                <thead>
+                                    <tr><th>Model</th><th class="num">Input /1M</th><th class="num">Output /1M</th><th class="num">Credits in / out</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="model">GPT-5.6 Luna</td><td class="num">$1.00</td><td class="num">$6.00</td><td class="num">100 / 600</td></tr>
+                                    <tr><td class="model">Claude Sonnet 5 <span class="dim" style="font-family:var(--font-mono);font-size:18px;">promo*</span></td><td class="num">$2.00</td><td class="num">$10.00</td><td class="num">200 / 1,000</td></tr>
+                                    <tr><td class="model">GPT-5.6 Terra</td><td class="num">$2.50</td><td class="num">$15.00</td><td class="num">250 / 1,500</td></tr>
+                                    <tr><td class="model">Claude Opus 4.8</td><td class="num">$5.00</td><td class="num">$25.00</td><td class="num">500 / 2,500</td></tr>
+                                    <tr><td class="model">GPT-5.6 Sol</td><td class="num">$5.00</td><td class="num">$30.00</td><td class="num">500 / 3,000</td></tr>
+                                </tbody>
+                            </table>
+                            <p class="tnote reveal">Per 1M tokens, USD, default tier. * Sonnet 5 promo through 2026-08-31; standard $3 / $15 after. Long-context requests (&gt;272K in; Luna &gt;200K) bill higher.</p>
+                        </div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">10 / 12</span>
+                <!-- Presenter notes:
+                Prices from docs.github.com models-and-pricing via reference/5.6-use-guide/02-copilot-economics.md and reference/model-pricing.md, stamped 2026-07-14/15. Daily-driving Sol medium and watching the meter is the endorsed posture; credits pool org-wide.
+                -->
+            </section>
+
+
+            <!-- 11 FINISH SAFELY -->
+            <section class="slide alt" aria-labelledby="s12" data-slide-title="Finish safely">
+                <div class="inner">
+                    <p class="kicker reveal">finish <span class="c">//</span> two checks</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s12">Two checks before you trust a run</h2>
+                    <div class="reviewgrid reveal">
+                        <div class="reviewcard">
+                            <h3>Set the permission level on purpose</h3>
+                            <ul class="bullets tight arrow">
+                                <li><strong>Autopilot is now the default</strong> (June 2026): self-approves actions and runs to completion</li>
+                                <li>Per session: Default / Bypass Approvals / Autopilot &mdash; pick deliberately, especially near configs, deletes, or migrations</li>
+                            </ul>
+                        </div>
+                        <div class="reviewcard">
+                            <h3>A human reviews every diff</h3>
+                            <ul class="bullets tight arrow">
+                                <li>Inspect the diff against the task's acceptance criteria; reject unrelated changes</li>
+                                <li>An agent review can help &mdash; give it only the diff + criteria, flag correctness gaps only &mdash; but it never replaces you</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="smallnote reveal">Recovery, in order: keep/undo individual edits &rarr; restore checkpoint &rarr; <span class="kbd">/fork</span> to try another path &rarr; <span class="kbd">/clear</span> when the context is polluted.</p>
+                </div>
+                <span class="page" aria-hidden="true">11 / 12</span>
+                <!-- Presenter notes:
+                METR measured Sol's reward-hacking rate as the highest of any public model assessed - diff review is not optional. Autopilot default changed in the June 2026 release; many users don't know.
+                -->
+            </section>
+
+
+            <!-- 12 SOURCES -->
+            <section class="slide" aria-labelledby="s13" data-slide-title="Fine print and sources">
+                <div class="inner">
+                    <p class="kicker reveal">reference <span class="c">//</span> fine print</p>
+                    <div class="rule reveal" aria-hidden="true"></div>
+                    <h2 class="reveal" id="s13">Check the work</h2>
+                    <div class="col2 reveal" style="margin-top: 28px;">
+                        <div>
+                            <h3>caveats</h3>
+                            <ul class="bullets tight arrow">
+                                <li>Edit mode is deprecated: hidden since Jan 2026, removal scheduled &mdash; use Agent for multi-file edits</li>
+                                <li>The ~40% rule is house guidance; vendors publish no threshold</li>
+                                <li>Writing the plan to a repo file is an instruction you give, not documented VS Code behavior</li>
+                                <li>Real slash commands: /plan /compact /clear /fork /fix /tests /init /new &mdash; there is no /resume</li>
+                                <li>Sonnet 5 pricing is a promo ending 2026-08-31</li>
+                                <li>Features and prices move monthly; recheck before circulating</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>sources</h3>
+                            <ul class="srclist">
+                                <li><strong>VS Code docs</strong>: planning, chat context, features cheat sheet, release notes v1.107&ndash;v1.111</li>
+                                <li><strong>GitHub docs</strong>: models &amp; pricing, monitor AI usage, coding-agent best practices</li>
+                                <li><strong>Anthropic</strong>: Claude Code best practices, effective context engineering</li>
+                                <li><strong>Practitioners</strong>: Simon Willison, dbreunig, Victor Dibia, Artificial Analysis</li>
+                                <li><strong>This repo</strong>: reference/coding-tools/agentic-coding-practices.md + copilot-vscode-*.md &middot; companion deck: gpt-5.6-model-use-guide.html</li>
+                            </ul>
+                            <p class="dim" style="margin-top: 20px; font-size: 21px; font-family: var(--font-mono);">Compiled 2026-07-15. Per-fact source stamps live in the reference files.</p>
+                        </div>
+                    </div>
+                </div>
+                <span class="page" aria-hidden="true">12 / 12</span>
+                <!-- Presenter notes:
+                Point back to slide 2 (the map) and slide 7 (the loop). The message: plan once, persist the tasks, one task per fresh window, watch the gauge.
+                -->
+            </section>
+
+        </main>
+
+        <nav class="deck-controls" aria-label="Presentation controls">
+            <button id="previousSlide" type="button" aria-label="Previous slide" aria-controls="deckStage" title="Previous slide (Left Arrow)">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <output class="slide-counter" id="slideCounter">1 / 12</output>
+            <button id="nextSlide" type="button" aria-label="Next slide" aria-controls="deckStage" title="Next slide (Right Arrow or Space)">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m7.5 4 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </nav>
+
+        <div class="sr-only" id="slideAnnouncement" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const DESIGN_WIDTH = 1920;
+            const DESIGN_HEIGHT = 1080;
+            const SWIPE_THRESHOLD = 60;
+            const SWIPE_MAX_DURATION = 1000;
+
+            const viewport = document.getElementById("deckViewport");
+            const stage = document.getElementById("deckStage");
+            const slides = Array.from(stage.querySelectorAll(".slide"));
+            const previousButton = document.getElementById("previousSlide");
+            const nextButton = document.getElementById("nextSlide");
+            const counter = document.getElementById("slideCounter");
+            const announcement = document.getElementById("slideAnnouncement");
+
+            let currentIndex = Math.max(0, slides.findIndex((s) => s.classList.contains("active")));
+            let touchStartX = 0, touchStartY = 0, touchStartTime = 0, suppressClickUntil = 0;
+
+            const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+            function scaleStage() {
+                const vw = viewport.clientWidth, vh = viewport.clientHeight;
+                const scale = Math.min(vw / DESIGN_WIDTH, vh / DESIGN_HEIGHT);
+                const left = (vw - DESIGN_WIDTH * scale) / 2;
+                const top = (vh - DESIGN_HEIGHT * scale) / 2;
+                stage.style.transform = `translate3d(${left}px, ${top}px, 0) scale(${scale})`;
+            }
+
+            function slideLabel(s, i) {
+                return s.dataset.slideTitle || s.querySelector("h1,h2,h3")?.textContent?.trim() || `Slide ${i + 1}`;
+            }
+
+            function showSlide(idx, announce = true) {
+                currentIndex = clamp(idx, 0, slides.length - 1);
+                slides.forEach((s, i) => {
+                    const active = i === currentIndex;
+                    s.classList.toggle("active", active);
+                    s.setAttribute("aria-hidden", String(!active));
+                    s.inert = !active;
+                });
+                counter.value = `${currentIndex + 1} / ${slides.length}`;
+                counter.textContent = `${currentIndex + 1} / ${slides.length}`;
+                previousButton.disabled = currentIndex === 0;
+                nextButton.disabled = currentIndex === slides.length - 1;
+                if (announce) announcement.textContent = `Slide ${currentIndex + 1} of ${slides.length}: ${slideLabel(slides[currentIndex], currentIndex)}`;
+            }
+
+            const previousSlide = () => showSlide(currentIndex - 1);
+            const nextSlide = () => showSlide(currentIndex + 1);
+
+            function isInteractiveTarget(t) {
+                if (!(t instanceof Element)) return false;
+                return Boolean(t.closest("a, button, input, textarea, select, summary, [contenteditable]:not([contenteditable='false']), [role='button']"));
+            }
+
+            previousButton.addEventListener("click", previousSlide);
+            nextButton.addEventListener("click", nextSlide);
+
+            document.addEventListener("keydown", (e) => {
+                if (e.ctrlKey || e.metaKey || e.altKey || isInteractiveTarget(e.target)) return;
+                let handled = true;
+                switch (e.key) {
+                    case "ArrowLeft": case "PageUp": previousSlide(); break;
+                    case "ArrowRight": case "PageDown": case " ": case "Spacebar": nextSlide(); break;
+                    case "Home": showSlide(0); break;
+                    case "End": showSlide(slides.length - 1); break;
+                    default: handled = false;
+                }
+                if (handled) e.preventDefault();
+            });
+
+            stage.addEventListener("click", (e) => {
+                if (Date.now() < suppressClickUntil || isInteractiveTarget(e.target)) return;
+                const sel = window.getSelection();
+                if (sel && !sel.isCollapsed) return;
+                const r = stage.getBoundingClientRect();
+                const x = e.clientX - r.left;
+                if (x < r.width * 0.25) previousSlide();
+                else if (x > r.width * 0.75) nextSlide();
+            });
+
+            viewport.addEventListener("touchstart", (e) => {
+                if (e.touches.length !== 1) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+            }, { passive: true });
+
+            viewport.addEventListener("touchend", (e) => {
+                if (e.changedTouches.length !== 1) return;
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                const dur = Date.now() - touchStartTime;
+                if (dur <= SWIPE_MAX_DURATION && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                    suppressClickUntil = Date.now() + 450;
+                    if (dx < 0) nextSlide(); else previousSlide();
+                }
+            }, { passive: true });
+
+            window.addEventListener("resize", scaleStage, { passive: true });
+            window.visualViewport?.addEventListener("resize", scaleStage, { passive: true });
+
+            scaleStage();
+            showSlide(currentIndex, false);
+        })();
+    </script>
+</body>
+</html>

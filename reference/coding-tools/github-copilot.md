@@ -69,6 +69,6 @@ Operational reference for the tool this org currently runs. **Billing/economics 
 ## What's still unverified
 - **Inference region** for Claude/OpenAI/Gemini models served inside Copilot — GitHub docs don't publish it; the "under whose terms / where" question is confirmed only at the no-training/DPA level, not the geographic level. (blocks a clean Canadian-residency answer for Copilot the same way it does for M365 Copilot)
 - **Overage rate per credit** beyond included pool — one aggregator claimed $0.04/credit; docs don't print the line item (see economics card flag).
-- **Six-level reasoning dial for GPT-5.6** — changelog claims six, generic VS Code doc still lists none→high; not screenshot-confirmed (economics card flag).
+- **Six-level reasoning dial for GPT-5.6** — the Thinking Effort submenu itself is now doc-confirmed (VS Code language-models doc, 2026-07-15), but the six-level count for 5.6 is still changelog-only (economics card flag).
 - Whether the **duplication filter is truly "enforced/on" by default on Enterprise** vs merely policy-available — sources phrase this two ways; confirm in the org's own policy panel.
 - Exact **preview-model data-retention** default state per current org policy — verify in the live admin console, don't assume.

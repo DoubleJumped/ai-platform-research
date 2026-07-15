@@ -27,7 +27,7 @@ Output-cost ratio **Sol : Terra : Luna = 5 : 2.5 : 1**. Anchors: Claude Opus 4.8
 ## What Copilot exposes (and doesn't)
 
 - **VS Code HAS a reasoning dial**: model picker → `>` arrow next to the model name → **Thinking Effort** submenu. Six levels for GPT-5.6 (none/low/medium/high/xhigh/max) per the launch changelog; default **medium** with adaptive reasoning; the setting sticks per model per session. (as of 2026-07-14, sources: https://github.blog/changelog/2026-07-09-openais-gpt-5-6-sol-terra-and-luna-are-now-available-in-github-copilot/ "Six reasoning effort levels… Adjust context size and reasoning effort from a unified picker"; https://code.visualstudio.com/docs/agent-customization/language-models)
-  - Doc-lag flag: the generic VS Code doc still lists only none→high; the changelog's six-level claim for 5.6 is not screenshot-confirmed. Verify in your own picker.
+  - Doc-lag partially resolved: the language-models doc now documents the Thinking Effort submenu, and July 2026 merged context-size + effort into one model-customization picker (as of 2026-07-15, sources: https://code.visualstudio.com/docs/agent-customization/language-models · https://github.com/microsoft/vscode/issues/303685). The specific six-level count for 5.6 remains changelog-only; verify in your own picker.
   - Old settings keys (`github.copilot.chat.responsesApiReasoningEffort` etc.) are deprecated; the picker is the supported path.
 - **Copilot CLI**: `--effort low|medium|high|xhigh` (or `effortLevel` in ~/.copilot/config.json); no none/max. (source: https://github.com/github/copilot-cli/issues/2904)
 - The dial is documented for **VS Code + CLI only**; other surfaces (Visual Studio, JetBrains, web, cloud coding agent) get the models without a documented effort control.
