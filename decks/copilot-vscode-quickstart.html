@@ -25,6 +25,8 @@
             --frontier: #ffa657;
             --versatile: #79c0ff;
             --fast: #3fb950;
+            --sol: #ffa657;
+            --luna: #9aa4b2;
             --font-mono: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
             --font-body: "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -134,6 +136,8 @@
         .row.frontier { border-left-color: var(--frontier); }
         .row.versatile { border-left-color: var(--versatile); }
         .row.fast { border-left-color: var(--fast); }
+        .row.sol { border-left-color: var(--sol); }
+        .row.luna { border-left-color: var(--luna); }
         .row .job { font-family: var(--font-mono); font-size: 38px; font-weight: 700; color: var(--text-bright); }
         .row .job small { display: block; font-family: var(--font-body); font-size: 24px; font-weight: 400; color: var(--text-dim); margin-top: 7px; }
         .row .arw { text-align: center; color: var(--text-dim); font-size: 40px; }
@@ -143,6 +147,8 @@
         .row.frontier .tag { color: var(--frontier); }
         .row.versatile .tag { color: var(--versatile); }
         .row.fast .tag { color: var(--fast); }
+        .row.sol .tag { color: var(--sol); }
+        .row.luna .tag { color: var(--luna); }
 
         /* === SPLIT === */
         .split { display: grid; grid-template-columns: minmax(0,0.92fr) minmax(0,1.08fr); gap: 64px; align-items: center; height: 100%; }
@@ -156,8 +162,8 @@
         .bullets.arrow li::before { content: ">"; }
 
         .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; margin-top: 22px; }
-        .do-dont h3.up { color: var(--amber); }
-        .do-dont h3.down { color: var(--green); }
+        .do-dont h3.up { color: var(--sol); }
+        .do-dont h3.down { color: var(--luna); }
         .do-dont ul { margin-top: 14px; }
 
         /* === STATS === */
@@ -175,6 +181,7 @@
         .pstep.fast { border-left-color: var(--fast); }
         .pstep.versatile { border-left-color: var(--versatile); }
         .pstep.frontier { border-left-color: var(--frontier); }
+        .pstep.sol { border-left-color: var(--sol); }
         .pstep .idx { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text-dim); }
         .pstep .what { font-size: 28px; color: var(--text-bright); }
         .pstep .what code { font-family: var(--font-mono); color: var(--blue); font-size: 25px; }
@@ -182,6 +189,7 @@
         .pstep.fast .with { color: var(--fast); }
         .pstep.versatile .with { color: var(--versatile); }
         .pstep.frontier .with { color: var(--frontier); }
+        .pstep.sol .with { color: var(--sol); }
 
         /* === CONTROL CARDS === */
         .controlgrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 22px; margin-top: 32px; }
@@ -213,6 +221,8 @@
         .tbl thead th { text-align: left; padding: 13px 18px; font-family: var(--font-mono); font-size: 19px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); border-bottom: 2px solid var(--line); }
         .tbl tbody td { padding: 12px 18px; font-size: 25px; border-bottom: 1px solid var(--line); color: var(--text); }
         .tbl .model { font-family: var(--font-mono); font-weight: 700; color: var(--text-bright); }
+        .tbl .model.msol { color: var(--sol); }
+        .tbl .model.mluna { color: var(--luna); }
         .tbl .num { text-align: right; font-family: var(--font-mono); }
         .tbl .tag { font-family: var(--font-mono); font-size: 18px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; }
         .tag.tf { color: var(--frontier); }
@@ -287,17 +297,17 @@
                     <div class="rule reveal" aria-hidden="true"></div>
                     <h2 class="reveal" id="s2" style="margin-bottom: 40px;">Task to model, in one look</h2>
                     <div class="map reveal">
-                        <div class="row frontier">
-                            <div class="job">plan &amp; solve<small>architecture, ambiguity, hard bugs, big-repo analysis</small></div>
+                        <div class="row sol">
+                            <div class="job">plan &amp; solve<small>planning, architecture, ambiguity, hard bugs, big-repo analysis</small></div>
                             <div class="arw" aria-hidden="true">&rarr;</div>
-                            <div class="to"><div class="name">Sol high</div><div class="tag">frontier</div></div>
+                            <div class="to"><div class="name">Sol high</div><div class="tag">escalation</div></div>
                         </div>
-                        <div class="row versatile">
+                        <div class="row sol">
                             <div class="job">implement<small>features, tests, routine multi-file work &mdash; the daily driver</small></div>
                             <div class="arw" aria-hidden="true">&rarr;</div>
                             <div class="to"><div class="name">Sol medium</div><div class="tag">default</div></div>
                         </div>
-                        <div class="row fast">
+                        <div class="row luna">
                             <div class="job">search &amp; small edits<small>find code, explain, boilerplate, single-file fixes</small></div>
                             <div class="arw" aria-hidden="true">&rarr;</div>
                             <div class="to"><div class="name">Luna high</div><div class="tag">fast</div></div>
@@ -322,9 +332,9 @@
                         <div>
                             <h3 class="up">^ Sol high when</h3>
                             <ul class="bullets tight">
+                                <li>You're planning &mdash; /plan always runs on Sol high</li>
                                 <li>A cheaper model failed the same error twice</li>
-                                <li>The task spans multiple files or subsystems</li>
-                                <li>Requirements are ambiguous</li>
+                                <li>Requirements are ambiguous or span subsystems</li>
                                 <li>The run will exceed ~10 minutes</li>
                             </ul>
                         </div>
@@ -444,17 +454,17 @@
                             <div class="what"><code>/clear</code> &mdash; start a fresh window</div>
                             <div class="with">every task</div>
                         </div>
-                        <div class="pstep versatile">
+                        <div class="pstep sol">
                             <div class="idx">2</div>
                             <div class="what">Load context: <code>#file:plan.md</code> + exemplar files &mdash; "implement task 2 only"</div>
                             <div class="with">Sol medium</div>
                         </div>
-                        <div class="pstep versatile">
+                        <div class="pstep sol">
                             <div class="idx">3</div>
                             <div class="what">Implement + verify: tests, lint, run the changed behavior</div>
                             <div class="with">Sol medium</div>
                         </div>
-                        <div class="pstep frontier">
+                        <div class="pstep versatile">
                             <div class="idx">4</div>
                             <div class="what">Update the register: check off the task, append learnings to notes</div>
                             <div class="with">then repeat</div>
@@ -539,11 +549,11 @@
                                     <tr><th>Model</th><th class="num">Input /1M</th><th class="num">Output /1M</th><th class="num">Credits in / out</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td class="model">GPT-5.6 Luna</td><td class="num">$1.00</td><td class="num">$6.00</td><td class="num">100 / 600</td></tr>
+                                    <tr><td class="model mluna">GPT-5.6 Luna</td><td class="num">$1.00</td><td class="num">$6.00</td><td class="num">100 / 600</td></tr>
                                     <tr><td class="model">Claude Sonnet 5 <span class="dim" style="font-family:var(--font-mono);font-size:18px;">promo*</span></td><td class="num">$2.00</td><td class="num">$10.00</td><td class="num">200 / 1,000</td></tr>
                                     <tr><td class="model">GPT-5.6 Terra</td><td class="num">$2.50</td><td class="num">$15.00</td><td class="num">250 / 1,500</td></tr>
                                     <tr><td class="model">Claude Opus 4.8</td><td class="num">$5.00</td><td class="num">$25.00</td><td class="num">500 / 2,500</td></tr>
-                                    <tr><td class="model">GPT-5.6 Sol</td><td class="num">$5.00</td><td class="num">$30.00</td><td class="num">500 / 3,000</td></tr>
+                                    <tr><td class="model msol">GPT-5.6 Sol</td><td class="num">$5.00</td><td class="num">$30.00</td><td class="num">500 / 3,000</td></tr>
                                 </tbody>
                             </table>
                             <p class="tnote reveal">Per 1M tokens, USD, default tier. * Sonnet 5 promo through 2026-08-31; standard $3 / $15 after. Long-context requests (&gt;272K in; Luna &gt;200K) bill higher.</p>
