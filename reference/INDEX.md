@@ -8,6 +8,11 @@
 
 - [deployment-matrix.md](deployment-matrix.md) — the capstone: model × surface × config (residency, ZDR, effort, spend controls) in one table · check-monthly
 
+## Security & authorized pentesting
+
+- [security/INDEX.md](security/INDEX.md) — sub-index: how to obtain an AI model for authorized pentesting of our own surfaces through official channels (Anthropic CVP, OpenAI TAC, other vendors, the RoE + Canadian-compliance layer) · check-monthly
+- [security/00-ai-pentest-access.md](security/00-ai-pentest-access.md) — the capstone: corrects the Mythos/downgrade misconception, three official channels at a glance, recommended path (apply to Anthropic CVP first) · check-monthly
+
 ## Platform cards
 
 - [platforms/microsoft-stack.md](platforms/microsoft-stack.md) — the Microsoft lane as one card: Copilot Cowork (GA Jun 2026), M365 Copilot, Copilot Studio/Agent 365, Foundry role · check-monthly
