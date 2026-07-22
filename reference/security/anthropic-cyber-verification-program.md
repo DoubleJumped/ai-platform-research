@@ -11,7 +11,7 @@ The real, self-apply channel for a verified defender to get Claude's dual-use cy
 ## What it is
 
 - **CVP adjusts the real-time cyber safeguards on GA Claude models for verified defenders** — unlocking vulnerability-exploitation analysis, offensive security tooling, and pentest/red-team workflows that the default safeguards refuse. Categorically prohibited uses (mass-exfiltration tooling, ransomware, C2) stay blocked regardless of verification. (as of 2026-07-21, source: https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude)
-- The support article names **Opus and Sonnet** as covered models. Flag: whether Fable 5 is folded into CVP coverage was not explicitly stated — verify at application time. (as of 2026-07-21, source: https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude)
+- **CVP covers Opus- and Sonnet-class models only — Fable 5 is NOT covered.** The support article scopes itself: "This article applies only to Opus and Sonnet class models." Fable 5 blocks high-risk dual-use by default and auto-routes flagged prompts to Opus 4.8; run authorized offensive work on **Opus 4.8 / Sonnet 5 directly** under CVP, and do not rely on Fable's fallback to inherit CVP relief (undocumented). Full detail: [fable5-cyber-classifier-fallback.md](fable5-cyber-classifier-fallback.md). (as of 2026-07-22, source: https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude-opus-and-sonnet)
 
 ## How to apply
 
